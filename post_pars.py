@@ -9,18 +9,15 @@ def post_parser():
         response = requests.get(URL)
         soup = BeautifulSoup(response.text, 'html.parser')
         for article in soup.find_all('article', class_='post'):
-            post_url = article.find('a', class_='post__title_link')
+            post_url = article.find('a', class_='post__title_link') # нашли в превьюшке ссылку на пост
             response_post = requests.get(post_url.attrs.get('href'))
             soup_post = BeautifulSoup(response_post.text, 'html.parser')
-            for art in soup_post.find_all('article', class_='post'):
-                hubs = art.find_all('a', class_='hub-link')
-                hubs_text = list(map(lambda x: x.text.lower(), hubs))
-                for word in KEYWORDS:
-                    if word in hubs_text:
-                        title_element = art.find('span', class_='post__title-text')
-                        title = title_element.text
-                        data = art.find('span', class_='post__time')
-                        print(f'{data.text}, {title} - {post_url.attrs.get("href")}')
+            post_text = soup_post.find('article', class_='post post_full')
+            for word in KEYWORDS:
+                if word in post_text.text.strip():
+                    title = post_text.find('span', class_='post__title-text').text.strip()
+                    data = post_text.find('span', class_='post__time').text.strip()
+                    print(f'Ключевое слово "{word}" найдено в статье:\n{data}\n{title}\n{post_url.attrs.get("href")}\n')
 
 
 if __name__ == '__main__':
